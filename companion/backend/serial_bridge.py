@@ -171,7 +171,9 @@ class SerialBridge:
                     ser.port = port_name
                     ser.baudrate = baud_rate
                     ser.timeout = 0.03
-                    ser.write_timeout = 0.1
+                    # A deck/config packet can be several KB; at 115200 baud that is hundreds of
+                    # milliseconds on the wire, so the write must be allowed to finish.
+                    ser.write_timeout = 3.0
                     ser.dsrdtr = False
                     ser.rtscts = False
                     ser.dtr = False

@@ -212,6 +212,14 @@ class SerialBridge:
                     last_ping = time.monotonic()
                     self._ser.write(b'{"t":"ping"}\n')
 
+                # Keepalive while linked: an idle deck sends nothing, so ask it for a "pong"
+                # before the stale timer fires. (Letting the link go stale forces a full
+                # re-handshake, which re-pushes the deck and settings to the device.)
+                if self.hydro_handshake and (time.monotonic() - self.last_rx_ts > 4.0) \
+                        and (time.monotonic() - last_ping > 4.0):
+                    last_ping = time.monotonic()
+                    self._ser.write(b'{"t":"ping"}\n')
+
                 waiting = self._ser.in_waiting
                 chunk = self._ser.read(waiting if waiting > 0 else 1)
                 if chunk:
@@ -227,6 +235,8 @@ class SerialBridge:
                         if raw_line.startswith("{"):
                             try:
                                 msg = json.loads(raw_line)
+                                if msg.get("t") == "pong":
+                                    continue    # keepalive reply; receiving it already refreshed last_rx_ts
                                 if msg.get("t") == "ready":
                                     self.hydro_handshake = True
                                     self.device_info = msg

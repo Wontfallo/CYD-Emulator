@@ -128,7 +128,13 @@ static void processCommandJson(const String& line) {
         g_hw.playSfx(SfxType::SFX_TOGGLE_OFF);
         g_hw.sleep();
     } else if (strcmp(t, "ping") == 0) {
-        sendReadyPacket();
+        // While linked, answer with a light keepalive. A "ready" packet makes the PC push the
+        // whole deck and settings again, so it is only sent when there is no link yet.
+        if (g_store.telem.connected) {
+            Serial.println(F("{\"t\":\"pong\"}"));
+        } else {
+            sendReadyPacket();
+        }
     } else if (strcmp(t, "cfg") == 0) {
         if (doc["bl"].is<int>())  g_store.settings.brightness = constrain(doc["bl"].as<int>(), 25, 255);
         if (doc["rot"].is<int>()) g_store.settings.rotation   = doc["rot"].as<int>() == 3 ? 3 : 1;

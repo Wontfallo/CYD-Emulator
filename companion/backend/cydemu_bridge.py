@@ -17,18 +17,21 @@ from typing import Any, Callable
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DAEMON_INFO = REPO_ROOT / "cyd-emu" / "state" / "default" / "daemon.json"
-DEFAULT_URL = "http://127.0.0.1:8790"
 
 
 def discover_url() -> str:
-    """CYDEMU_URL wins; otherwise wherever the default emulator instance says it is listening."""
+    """CYDEMU_URL wins; otherwise wherever the default emulator instance says it is listening.
+
+    Returns "" when neither exists. There is deliberately no fallback port: guessing one would
+    attach the companion (and its macros) to whatever emulator instance happens to be there.
+    """
     env = os.environ.get("CYDEMU_URL", "").strip()
     if env:
         return env.rstrip("/")
     try:
         return str(json.loads(DAEMON_INFO.read_text("utf-8"))["url"]).rstrip("/")
     except (OSError, ValueError, KeyError):
-        return DEFAULT_URL
+        return ""
 
 
 class CydEmuBridge:
@@ -107,6 +110,10 @@ class CydEmuBridge:
         while not self._stop.is_set():
             if not self.connected:
                 self.url = discover_url()
+                if not self.url:
+                    self.last_error = "no emulator instance found"
+                    self._stop.wait(2.0)
+                    continue
                 try:
                     status = self._get("/status", 2.0)
                     if not status.get("powered"):
@@ -147,6 +154,8 @@ class CydEmuBridge:
                     except ValueError:
                         continue
                     if not isinstance(msg, dict):
+                        continue
+                    if msg.get("t") == "pong":
                         continue
                     if msg.get("t") == "ready":
                         self.hydro_handshake = True

@@ -1,0 +1,14 @@
+QEMU for ESP32 (Xtensa), built as a library by the PICSimLab project.
+
+Taken from:  PICSimLab_0.9.3_260920_win64.zip
+             https://github.com/lcgamboa/picsimlab/releases/tag/v0.9.3
+             sha256 b7014c97a839dc388a253fde10c1914ccb5f9a691e58e540831ba1e6bb208138
+QEMU source: https://github.com/lcgamboa/qemu  (branch picsimlab-esp32, a fork of Espressif's QEMU)
+License:     GPL v2 (see COPYING)
+
+Files used from the zip:
+  lib/qemu/libqemu-xtensa.dll            sha256 276d656d22e50c17ff0ec9bb88701e46b87e916f7b2fb4094f724a7b56db5b1e
+  lib/qemu/fw/esp32-v3-rom.bin           ESP32 mask ROM image
+  lib/qemu/fw/esp32-v3-rom-app.bin
+  libglib-2.0-0.dll libgcrypt-20.dll libgpg-error-0.dll libintl-8.dll libiconv-2.dll
+  libpcre2-8-0.dll libwinpthread-1.dll libgcc_s_seh-1.dll zlib1.dll      (runtime dependencies)

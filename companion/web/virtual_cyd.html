@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HYDRO-DECK • Real-Time Virtual CYD Hardware Mirror</title>
+  <style>
+    :root {
+      --bg: #07090f;
+      --panel: #0e131e;
+      --card: #131a29;
+      --border: #233049;
+      --text: #eef3ff;
+      --muted: #8b9bb9;
+      --cyan: #00f0da;
+      --emerald: #22e88a;
+      --amber: #ffb62e;
+      --crimson: #ff3a62;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 0%, #101b33 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 20px;
+      gap: 14px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 10px var(--cyan);
+    }
+    .brand h1 { font-size: 14px; letter-spacing: 0.08em; margin: 0; }
+    .sub { font-size: 12px; color: var(--muted); }
+    .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn, select {
+      background: #182235;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: var(--cyan); }
+    .btn.primary { border-color: var(--cyan); color: var(--cyan); }
+    .btn.active { background: #10323c; border-color: var(--cyan); color: var(--cyan); }
+    .main-grid {
+      display: grid;
+      grid-template-columns: auto minmax(340px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1080px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .pcb-board {
+      background: linear-gradient(155deg, #1a2130 0%, #0d111a 100%);
+      border: 2px solid #2b3854;
+      border-radius: 18px;
+      padding: 18px 22px 20px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      user-select: none;
+    }
+    .pcb-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: "Cascadia Mono", Consolas, monospace;
+    }
+    .bezel-frame {
+      background: #040508;
+      border: 2px solid #1f283b;
+      border-radius: 10px;
+      padding: 10px;
+      position: relative;
+      display: inline-block;
+    }
+    #cyd-canvas {
+      display: block;
+      image-rendering: pixelated;
+      border-radius: 4px;
+      cursor: crosshair;
+      touch-action: none;
+      background: #080a10;
+      box-shadow: 0 0 24px rgba(0, 240, 218, 0.08);
+    }
+    .pcb-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 4px;
+    }
+    .led-housing {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: "Cascadia Mono", Consolas, monospace;
+    }
+    .rgb-led {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #141923;
+      border: 1px solid #394868;
+      transition: background 80ms linear, box-shadow 80ms linear;
+    }
+    .boot-btn {
+      background: linear-gradient(180deg, #273147, #161d2b);
+      border: 1px solid #485b82;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .boot-btn:active, .boot-btn.pressed {
+      transform: translateY(1px);
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+    .hud-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .card h2 {
+      margin: 0 0 10px 0;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .reg-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .reg-item {
+      background: var(--card);
+      border: 1px solid #1e283c;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .reg-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+    .reg-val {
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 2px;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      color: var(--cyan);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .quick-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .serial-log {
+      background: #06080d;
+      border: 1px solid #1b2436;
+      border-radius: 8px;
+      height: 220px;
+      overflow-y: auto;
+      padding: 8px;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .log-line { display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0; }
+    .log-dir { min-width: 64px; font-weight: 700; }
+    .dir-tx { color: var(--emerald); }
+    .dir-rx { color: var(--cyan); }
+    .log-body { color: #c7d4ee; overflow-wrap: anywhere; }
+    .pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot" id="ws-dot"></span>
+      <div>
+        <h1>VIRTUAL CYD HARDWARE MIRROR • ESP32-32E + XPT2046</h1>
+        <div class="sub">Executing real C++ firmware (TFT_eSPI + DisplayUI + TouchInput + DeckStore + HwFeedback) live in real time</div>
+      </div>
+    </div>
+    <div class="controls" style="flex-wrap:nowrap;">
+      <select id="panel-select" title="LCD Controller Panel">
+        <option value="ili9341">Panel: ILI9341</option>
+        <option value="st7789">Panel: ST7789V</option>
+      </select>
+      <select id="zoom-select" title="Display Zoom">
+        <option value="1">Zoom: 1x</option>
+        <option value="2" selected>Zoom: 2x (640×480)</option>
+        <option value="3">Zoom: 3x</option>
+      </select>
+      <button class="btn" id="btn-audio">Audio: Muted</button>
+      <button class="btn" id="btn-sync">Push Sync</button>
+      <button class="btn primary" id="btn-reset">Reboot MCU</button>
+      <a class="btn" href="/" style="text-decoration:none">Companion Studio</a>
+    </div>
+  </header>
+
+  <main class="main-grid">
+    <section class="pcb-board">
+      <div class="pcb-header">
+        <span>E32R28T 2.8" 320×240 • <strong id="hdr-panel" style="color:var(--text)">ILI9341</strong></span>
+        <span id="hdr-fps">WS Connecting...</span>
+      </div>
+      <div class="bezel-frame">
+        <canvas id="cyd-canvas" width="320" height="240" style="width:640px;height:480px"></canvas>
+      </div>
+      <div class="pcb-footer">
+        <div class="led-housing">
+          <div class="rgb-led" id="rgb-led"></div>
+          <span>LED2 GPIO22/16/17: <strong id="rgb-text">0,0,0</strong></span>
+        </div>
+        <div class="led-housing">
+          <span>TOUCH: <strong id="touch-coords">IDLE</strong></span>
+        </div>
+        <button class="boot-btn" id="btn-boot" title="Hold for sleep / Tap to switch screen (GPIO0)">BOOT (KEY2)</button>
+      </div>
+    </section>
+
+    <section class="hud-col">
+      <div class="card">
+        <h2>Hardware Registers & Pins <span class="pill" id="pill-screen">SCR: DECK • P1</span></h2>
+        <div class="reg-grid">
+          <div class="reg-item"><div class="reg-lbl">Backlight (GPIO21)</div><div class="reg-val" id="reg-bl">--</div></div>
+          <div class="reg-item"><div class="reg-lbl">MADCTL (0x36)</div><div class="reg-val" id="reg-madctl">0x--</div></div>
+          <div class="reg-item"><div class="reg-lbl">Audio Amp (GPIO4/26)</div><div class="reg-val" id="reg-amp">MUTED</div></div>
+          <div class="reg-item"><div class="reg-lbl">XPT2046 RAW X/Y</div><div class="reg-val" id="reg-touch">2048, 2048</div></div>
+          <div class="reg-item"><div class="reg-lbl">Wi-Fi / IP</div><div class="reg-val" id="reg-wifi">OFF</div></div>
+          <div class="reg-item"><div class="reg-lbl">Battery (GPIO34)</div><div class="reg-val" id="reg-bat">4.12 V</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Screen &amp; Hardware Quick Triggers</h2>
+        <div class="quick-bar">
+          <button class="btn" data-vscr="0" onclick="sendCmd({t:'scr',s:0})">DECK</button>
+          <button class="btn" data-vscr="1" onclick="sendCmd({t:'scr',s:1})">VITALS</button>
+          <button class="btn" data-vscr="2" onclick="sendCmd({t:'scr',s:2})">MEDIA</button>
+          <button class="btn" data-vscr="3" onclick="sendCmd({t:'scr',s:3})">TIMER</button>
+          <button class="btn" data-vscr="4" onclick="sendCmd({t:'scr',s:4})">SYS</button>
+          <button class="btn" onclick="sendCmd({t:'toast',m:'VIRTUAL CYD LINKED',c:'#00F0DA'})">Send Toast</button>
+        </div>
+        <div class="sub" id="vsub-readout" style="margin-top:8px;display:none;">Vitals SubView: <strong id="vsub-val" style="color:var(--cyan)">OVERVIEW</strong></div>
+      </div>
+
+      <div class="card">
+        <h2>Live UART0 Serial Protocol Monitor (115200 baud) <button class="btn" style="padding:2px 8px;font-size:10px" onclick="document.getElementById('serial-log').innerHTML=''">Clear</button></h2>
+        <div class="serial-log" id="serial-log"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("cyd-canvas");
+    const ctx = canvas.getContext("2d");
+    const offscreen = new ImageData(320, 240);
+
+    let ws = null;
+    let audioCtx = null;
+    let audioEnabled = false;
+    let pointerDown = false;
+    let lastPx = { x: 0, y: 0 };
+
+    function setZoom(z) {
+      const s = Number(z) || 2;
+      canvas.style.width = (320 * s) + "px";
+      canvas.style.height = (240 * s) + "px";
+    }
+    document.getElementById("zoom-select").addEventListener("change", (e) => setZoom(e.target.value));
+
+    document.getElementById("panel-select").addEventListener("change", async (e) => {
+      await fetch("/api/virtual/panel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ panel: e.target.value }),
+      });
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", async () => {
+      await fetch("/api/virtual/reset", { method: "POST" });
+    });
+
+    document.getElementById("btn-sync").addEventListener("click", async () => {
+      await fetch("/api/device/sync", { method: "POST" });
+    });
+
+    document.getElementById("btn-audio").addEventListener("click", () => {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById("btn-audio");
+      btn.textContent = audioEnabled ? "Audio: Active" : "Audio: Muted";
+      btn.classList.toggle("active", audioEnabled);
+    });
+
+    function playBeeps(events) {
+      if (!audioEnabled || !audioCtx || !events || !events.length) return;
+      let t = audioCtx.currentTime;
+      for (const ev of events) {
+        const freq = ev.freq_hz || 0;
+        const dur = Math.max(0.015, (ev.ms || 30) / 1000.0);
+        if (freq > 40 && ev.amp) {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.08, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + dur);
+        }
+        t += dur;
+      }
+    }
+
+    async function sendCmd(pkt) {
+      await fetch("/api/virtual/serial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pkt),
+      });
+    }
+
+    function sendTouch(down, ev) {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.max(0, Math.min(319, Math.round(((ev.clientX - rect.left) / rect.width) * 320)));
+      const y = Math.max(0, Math.min(239, Math.round(((ev.clientY - rect.top) / rect.height) * 240)));
+      lastPx = { x, y };
+      document.getElementById("touch-coords").textContent = down ? `DOWN (${x}, ${y})` : `IDLE (${x}, ${y})`;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "touch", down, x, y }));
+      } else {
+        fetch("/api/virtual/touch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ down, x, y }),
+        });
+      }
+    }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      pointerDown = true;
+      sendTouch(true, e);
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!pointerDown) return;
+      sendTouch(true, e);
+    });
+    canvas.addEventListener("pointerup", (e) => {
+      if (!pointerDown) return;
+      pointerDown = false;
+      sendTouch(false, e);
+    });
+    canvas.addEventListener("pointercancel", (e) => {
+      if (!pointerDown) return;
+      pointerDown = false;
+      sendTouch(false, e);
+    });
+
+    const bootBtn = document.getElementById("btn-boot");
+    bootBtn.addEventListener("pointerdown", () => {
+      bootBtn.classList.add("pressed");
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "boot", down: true }));
+      else fetch("/api/virtual/boot", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({down:true}) });
+    });
+    bootBtn.addEventListener("pointerup", () => {
+      bootBtn.classList.remove("pressed");
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "boot", down: false }));
+      else fetch("/api/virtual/boot", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({down:false}) });
+    });
+
+    function updateHud(st) {
+      if (!st) return;
+      document.getElementById("hdr-panel").textContent = (st.panel_type || "ili9341").toUpperCase();
+      document.getElementById("panel-select").value = st.panel_type || "ili9341";
+      const gCorr = (c) => Math.min(255, Math.round(Math.pow(Math.max(0, Number(c) || 0) / 255, 0.55) * 255));
+      const led = st.led || { r: 0, g: 0, b: 0 };
+      const lr = gCorr(led.r), lg = gCorr(led.g), lb = gCorr(led.b);
+      const ledEl = document.getElementById("rgb-led");
+      ledEl.style.background = `rgb(${lr}, ${lg}, ${lb})`;
+      ledEl.style.boxShadow = (led.r + led.g + led.b > 12) ? `0 0 12px rgb(${lr}, ${lg}, ${lb})` : "none";
+      document.getElementById("rgb-text").textContent = `${led.r},${led.g},${led.b}`;
+
+      const scrIdxMap = { DECK: "0", VITALS: "1", MEDIA: "2", TIMER: "3", SYS: "4" };
+      const curScrKey = String(st.screen || "DECK").toUpperCase();
+      const curScrIdx = scrIdxMap[curScrKey] || "0";
+      document.querySelectorAll("[data-vscr]").forEach((b) => b.classList.toggle("active", b.dataset.vscr === curScrIdx));
+      const vsubRow = document.getElementById("vsub-readout");
+      const vsubVal = document.getElementById("vsub-val");
+      if (vsubRow && vsubVal) {
+        vsubRow.style.display = curScrKey === "VITALS" ? "block" : "none";
+        vsubVal.textContent = String(st.vitals_sub || "OVERVIEW").toUpperCase();
+      }
+
+      document.getElementById("pill-screen").textContent =
+        `SCR: ${st.screen || "DECK"} • P${(st.page ?? 0) + 1}${st.sleeping ? " • SLEEP" : ""}`;
+      document.getElementById("reg-bl").textContent = `${st.backlight_pwm ?? 0} / 255${st.sleeping ? " (SLEEP)" : ""}`;
+      document.getElementById("reg-madctl").textContent = `0x${(st.madctl ?? 0).toString(16).toUpperCase().padStart(2, "0")}${st.inverted ? " INV" : ""}`;
+      document.getElementById("reg-amp").textContent = st.amp_enabled ? "ACTIVE" : "SHUTDOWN";
+      document.getElementById("reg-touch").textContent = `${st.touch_raw_x ?? 0}, ${st.touch_raw_y ?? 0}`;
+      document.getElementById("reg-wifi").textContent = st.wifi_connected ? (st.wifi_ip || "ON") : "OFF";
+      document.getElementById("reg-bat").textContent = `${((st.bat_mv ?? 4120) / 1000).toFixed(2)} V`;
+
+      if (st.serial_logs) {
+        const logEl = document.getElementById("serial-log");
+        logEl.innerHTML = st.serial_logs.map(l =>
+          `<div class="log-line"><span class="log-dir ${l.dir === 'CYD->PC' ? 'dir-tx' : 'dir-rx'}">${l.dir}</span><span class="log-body">${escapeHtml(l.line)}</span></div>`
+        ).join("");
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function bootstrapHttpFrame() {
+      const img = new Image();
+      img.onload = () => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          ctx.drawImage(img, 0, 0, 320, 240);
+        }
+      };
+      img.src = "/api/virtual/frame.png?ts=" + Date.now();
+      fetch("/api/virtual/state").then(r => r.json()).then(d => {
+        if (d && d.state) updateHud(d.state);
+      }).catch(() => {});
+    }
+
+    function connectWs() {
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      ws = new WebSocket(`${proto}//${location.host}/ws/virtual-cyd`);
+      ws.binaryType = "arraybuffer";
+      ws.onopen = () => {
+        document.getElementById("hdr-fps").textContent = "LIVE MIRROR (30 FPS)";
+        document.getElementById("ws-dot").style.background = "#22e88a";
+      };
+      ws.onclose = () => {
+        document.getElementById("hdr-fps").textContent = "Reconnecting...";
+        document.getElementById("ws-dot").style.background = "#ffb62e";
+        setTimeout(connectWs, 1000);
+      };
+      ws.onmessage = (ev) => {
+        if (ev.data instanceof ArrayBuffer) {
+          const bytes = new Uint8ClampedArray(ev.data);
+          if (bytes.length === 320 * 240 * 4) {
+            offscreen.data.set(bytes);
+            ctx.putImageData(offscreen, 0, 0);
+          }
+        } else if (typeof ev.data === "string") {
+          try {
+            const msg = JSON.parse(ev.data);
+            if (msg.type === "state") updateHud(msg.state);
+            if (msg.type === "audio") playBeeps(msg.events);
+          } catch (_) {}
+        }
+      };
+    }
+    bootstrapHttpFrame();
+    connectWs();
+  </script>
+</body>
+</html>

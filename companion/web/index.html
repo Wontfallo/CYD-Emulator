@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HYDRO-DECK Studio — E32R28T Command Matrix</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Telemetry & Status Header -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><span></span></div>
+        <div>
+          <div class="brand-title">HYDRO-DECK <span class="badge-pro">STUDIO</span></div>
+          <div class="brand-sub" id="host-sub">WORKSTATION // E32R28T 2.8"</div>
+        </div>
+      </div>
+
+      <div class="top-metrics">
+        <div class="metric-pill cyan">
+          <span class="mp-k">CPU</span>
+          <span class="mp-v" id="top-cpu">--%</span>
+          <span class="mp-s" id="top-cclk">-- GHz</span>
+        </div>
+        <div class="metric-pill emerald">
+          <span class="mp-k">GPU</span>
+          <span class="mp-v" id="top-gpu">--%</span>
+          <span class="mp-s" id="top-gtmp">--</span>
+        </div>
+        <div class="metric-pill violet">
+          <span class="mp-k">RAM</span>
+          <span class="mp-v" id="top-ram">--%</span>
+          <span class="mp-s" id="top-ruse">--/-- GB</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="serial-pill" id="serial-pill" title="Click to inspect COM port &amp; firmware diagnostics">
+          <span class="dot" id="serial-dot"></span>
+          <span id="serial-label">COM11</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-export" title="Export profile JSON">Export</button>
+        <button class="btn btn-ghost btn-sm" id="btn-import" title="Import profile JSON">Import</button>
+        <input type="file" id="import-file" accept=".json" hidden />
+        <button class="btn btn-primary btn-sm" id="btn-sync">Sync to CYD</button>
+      </div>
+    </header>
+
+    <!-- Main 3-Column Body -->
+    <div class="workspace">
+      <!-- Left Nav Rail (Monochrome Vector Icons) -->
+      <nav class="nav-rail">
+        <button class="nav-item active" data-tab="deck">
+          <span class="nav-ico">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+          </span>
+          <span>Deck Matrix</span>
+        </button>
+        <button class="nav-item" data-tab="vitals">
+          <span class="nav-ico">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </span>
+          <span>HW Vitals</span>
+        </button>
+        <button class="nav-item" data-tab="profiles">
+          <span class="nav-ico">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </span>
+          <span>Auto Profiles</span>
+        </button>
+        <button class="nav-item" data-tab="device">
+          <span class="nav-ico">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.82 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.69 0-1.25.4-1.51 1z"/></svg>
+          </span>
+          <span>Device &amp; Flash</span>
+        </button>
+
+        <div class="nav-spacer"></div>
+
+        <div class="nav-card">
+          <div class="nav-card-title">ACTIVE AUDIO</div>
+          <div class="audio-mini-row">
+            <span>VOL</span>
+            <span class="mono" id="rail-vol">--%</span>
+          </div>
+          <input type="range" id="rail-vol-slider" min="0" max="100" value="50" class="slider" />
+          <div class="audio-mini-btns">
+            <button class="btn-xs" id="rail-mic-btn">Mic Live</button>
+            <button class="btn-xs" id="rail-play-btn">Play/Pause</button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Center Workspace -->
+      <main class="main-panel">
+        <!-- TAB 1: DECK MATRIX -->
+        <section class="tab-view active" id="tab-deck">
+          <div class="section-head">
+            <div class="page-tabs" id="page-tabs"></div>
+            <div class="page-actions">
+              <button class="btn btn-accent btn-sm" id="btn-templates">Starter Packs</button>
+              <button class="btn btn-ghost btn-sm" id="btn-rename-page">Rename</button>
+              <button class="btn btn-ghost btn-sm" id="btn-add-page">+ Add Page</button>
+              <button class="btn btn-danger btn-sm" id="btn-del-page">Delete</button>
+            </div>
+          </div>
+
+          <div class="deck-layout">
+            <div>
+              <div class="deck-grid" id="deck-grid"></div>
+              <div class="hint-bar">
+                Click a key to edit. Drag onto another key to swap slots. Double-click a key to fire it live.
+              </div>
+              <div class="panel-box history-box">
+                <div class="box-title">RECENT MACRO EXECUTION LOG</div>
+                <div class="macro-log" id="macro-log">
+                  <div class="log-empty">No macros triggered yet this session.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tile Inspector -->
+            <div class="inspector panel-box" id="inspector">
+              <div class="inspector-head">
+                <div class="minw0">
+                  <div class="box-head-inline">
+                    <span class="box-title" style="margin-bottom:0">KEY INSPECTOR</span>
+                    <span class="dirty-pill" id="insp-dirty" style="display:none">UNSAVED</span>
+                  </div>
+                  <div class="insp-slot" id="insp-slot">PAGE 1 // SLOT 1</div>
+                </div>
+                <div class="insp-head-btns">
+                  <button class="btn btn-accent btn-sm" id="btn-test-tile" title="Test Primary Tap Action">▶ Test</button>
+                  <button class="btn btn-ghost btn-sm" id="btn-test-hold" title="Test Long-Press / Hold Action">▶ Hold</button>
+                  <button class="btn btn-primary btn-sm" id="btn-save-tile">Save Key</button>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <label class="field">
+                  <span>Key Label</span>
+                  <input type="text" id="f-label" maxlength="16" placeholder="e.g. MIC MUTE" />
+                </label>
+                <label class="field">
+                  <span>Sub-Label</span>
+                  <input type="text" id="f-sub" maxlength="12" placeholder="e.g. WIN+SHIFT+S" />
+                </label>
+              </div>
+
+              <div class="form-grid-2">
+                <label class="field">
+                  <span>Neon Accent</span>
+                  <div class="color-row">
+                    <div class="swatches" id="color-swatches"></div>
+                    <input type="color" id="f-color" value="#00F0DA" title="Custom Accent Color" />
+                  </div>
+                </label>
+                <div class="field">
+                  <span>Behavior Mode</span>
+                  <label class="toggle-check">
+                    <input type="checkbox" id="f-tog" />
+                    <span>Stateful A/B Toggle</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-grid-2" id="ab-labels-row" style="display:none;">
+                <label class="field">
+                  <span>OFF Sub-Label (State A)</span>
+                  <input type="text" id="f-off-label" maxlength="12" placeholder="e.g. LIVE" />
+                </label>
+                <label class="field">
+                  <span>ON Sub-Label (State B)</span>
+                  <input type="text" id="f-on-label" maxlength="12" placeholder="e.g. MUTED" />
+                </label>
+              </div>
+
+              <div class="state-b-wrap" id="state-b-action-wrap" style="display:none;">
+                <div class="box-head-inline" style="justify-content:space-between;">
+                  <span style="font-size:12px;color:#c9a6ff;font-weight:700;">State B Action (When Toggle is ON)</span>
+                  <span class="muted-text" style="font-size:11px;">Optional override</span>
+                </div>
+                <select id="f-sb-type">
+                  <option value="">Same as Primary Action (Default)</option>
+                  <option value="hotkey">Keyboard Hotkey Combo</option>
+                  <option value="sequence">Multi-Step Macro Sequence</option>
+                  <option value="clipboard">Clipboard Snippet</option>
+                  <option value="soundboard">Soundboard WAV / SFX Chime</option>
+                  <option value="media">Media &amp; Audio Control</option>
+                  <option value="app">Launch App / Windows URI</option>
+                  <option value="app_focus">Focus / Launch Running Window</option>
+                  <option value="url">Open Website URL</option>
+                  <option value="window">Window Snap / Lock PC</option>
+                  <option value="screenshot">Capture Desktop PNG</option>
+                  <option value="shell">Run PowerShell Command</option>
+                  <option value="webhook">HTTP Webhook Request</option>
+                  <option value="folder">Jump to Deck Folder/Page</option>
+                  <option value="cyd_screen">Jump CYD Screen</option>
+                  <option value="timer">CYD Timer Control</option>
+                </select>
+                <div id="state-b-payload-area" class="payload-area"></div>
+              </div>
+
+              <div class="field">
+                <span>Vector Icon (CYD Hardware Matched)</span>
+                <div class="icon-grid" id="icon-grid"></div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="field">
+                <span>Primary Tap Action</span>
+                <select id="f-atype">
+                  <option value="hotkey">Keyboard Hotkey Combo</option>
+                  <option value="sequence">Multi-Step Macro Sequence</option>
+                  <option value="clipboard">Clipboard Snippet ({{date}}/{{time}}/{{clipboard}})</option>
+                  <option value="soundboard">Soundboard WAV / SFX Chime</option>
+                  <option value="media">Media &amp; Audio Control</option>
+                  <option value="app">Launch App / Windows URI</option>
+                  <option value="app_focus">Focus / Launch Running Window</option>
+                  <option value="url">Open Website URL</option>
+                  <option value="window">Window Snap / Lock PC</option>
+                  <option value="screenshot">Capture Desktop PNG</option>
+                  <option value="shell">Run PowerShell Command</option>
+                  <option value="webhook">HTTP Webhook Request</option>
+                  <option value="folder">Jump to Deck Folder/Page</option>
+                  <option value="cyd_screen">Jump CYD Screen</option>
+                  <option value="timer">CYD Timer Control</option>
+                </select>
+              </div>
+
+              <!-- Dynamic Primary Payload Editor -->
+              <div id="payload-area" class="payload-area"></div>
+
+              <div class="divider"></div>
+
+              <div class="field">
+                <div class="box-head-inline" style="justify-content:space-between;">
+                  <span>Long-Press Secondary Action (Hold ~550ms)</span>
+                  <label class="toggle-check" style="margin-top:0;font-size:11px;color:var(--text-mut);" title="Continuously repeat action every 145ms while held (ideal for volume/scroll)">
+                    <input type="checkbox" id="f-hrepeat" />
+                    <span>Hold Repeat (145ms)</span>
+                  </label>
+                </div>
+                <select id="f-htype">
+                  <option value="">None (Tap Only)</option>
+                  <option value="hotkey">Keyboard Hotkey Combo</option>
+                  <option value="sequence">Multi-Step Macro Sequence</option>
+                  <option value="clipboard">Clipboard Snippet</option>
+                  <option value="soundboard">Soundboard Audio</option>
+                  <option value="media">Media / Audio</option>
+                  <option value="app">Launch App</option>
+                  <option value="app_focus">Focus App Window</option>
+                  <option value="url">Open URL</option>
+                  <option value="window">Window / Lock</option>
+                  <option value="screenshot">Capture Desktop PNG</option>
+                  <option value="shell">PowerShell Command</option>
+                  <option value="webhook">HTTP Webhook</option>
+                  <option value="folder">Jump to Deck Folder/Page</option>
+                  <option value="cyd_screen">Jump CYD Screen</option>
+                  <option value="timer">CYD Timer Control</option>
+                </select>
+                <div id="hold-payload-area" class="payload-area"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: HW VITALS -->
+        <section class="tab-view" id="tab-vitals">
+          <div class="vitals-hero">
+            <div class="vital-card cyan">
+              <div class="vc-head">
+                <span>PROCESSOR</span>
+                <span class="mono truncate-sm" id="v-cpu-name">--</span>
+              </div>
+              <div class="vc-main">
+                <svg class="ring-svg" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="48" />
+                  <circle class="ring-fg" id="ring-cpu" cx="60" cy="60" r="48" />
+                </svg>
+                <div class="vc-val">
+                  <div class="vc-pct mono" id="v-cpu-pct">--%</div>
+                  <div class="vc-sub mono" id="v-cpu-clk">-- GHz</div>
+                </div>
+              </div>
+              <div class="vc-foot">
+                <span>Top: <strong id="v-cpu-proc">-</strong></span>
+                <span id="v-cpu-cores">-- Threads</span>
+              </div>
+              <div class="vc-note" id="v-cpu-temp-note"></div>
+            </div>
+
+            <div class="vital-card emerald">
+              <div class="vc-head">
+                <span>GRAPHICS ENGINE</span>
+                <span class="mono truncate-sm" id="v-gpu-name">--</span>
+              </div>
+              <div class="vc-main">
+                <svg class="ring-svg" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="48" />
+                  <circle class="ring-fg" id="ring-gpu" cx="60" cy="60" r="48" />
+                </svg>
+                <div class="vc-val">
+                  <div class="vc-pct mono" id="v-gpu-pct">--%</div>
+                  <div class="vc-sub mono" id="v-gpu-temp">N/A</div>
+                </div>
+              </div>
+              <div class="vc-foot">
+                <span id="v-gpu-pwr">N/A</span>
+                <span id="v-gpu-vram">N/A</span>
+              </div>
+            </div>
+
+            <div class="vital-card violet">
+              <div class="vc-head">
+                <span>SYSTEM MEMORY</span>
+                <span class="mono" id="v-ram-tot">-- GB</span>
+              </div>
+              <div class="vc-main">
+                <svg class="ring-svg" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="48" />
+                  <circle class="ring-fg" id="ring-ram" cx="60" cy="60" r="48" />
+                </svg>
+                <div class="vc-val">
+                  <div class="vc-pct mono" id="v-ram-pct">--%</div>
+                  <div class="vc-sub mono" id="v-ram-use">-- GB</div>
+                </div>
+              </div>
+              <div class="vc-foot">
+                <span>Top: <strong id="v-ram-proc">-</strong></span>
+                <span id="v-disk-free">Disk -- GB</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="vitals-lower">
+            <div class="panel-box chart-box">
+              <div class="box-head">
+                <span class="box-title" style="margin-bottom:0">LIVE TELEMETRY TIMELINE</span>
+                <div class="chart-controls">
+                  <div class="legend" id="chart-legend">
+                    <span class="leg cyan">● CPU</span>
+                    <span class="leg emerald">● GPU</span>
+                    <span class="leg violet">● RAM</span>
+                  </div>
+                  <div class="chart-mode-btns">
+                    <button type="button" class="btn-xs active" data-cmode="util">Util %</button>
+                    <button type="button" class="btn-xs" data-cmode="net">Net Mbps</button>
+                  </div>
+                </div>
+              </div>
+              <svg id="telem-svg" class="telem-svg"></svg>
+            </div>
+
+            <div class="panel-box gpu-detail-box">
+              <div class="box-head" style="margin-bottom:8px;">
+                <span class="box-title" id="v-detail-title" style="margin-bottom:0">GPU &amp; LOGICAL THREAD MATRIX</span>
+                <span class="mono muted-text" id="v-thread-count">-- Threads</span>
+              </div>
+              <div class="gpu-bars" id="gpu-bars"></div>
+              <div class="core-matrix" id="core-matrix"></div>
+              <div class="net-strip mono" id="net-strip">NET DOWN: -- Mbps // NET UP: -- Mbps</div>
+            </div>
+          </div>
+
+          <div class="vitals-bottom-row">
+            <div class="panel-box">
+              <div class="box-title">TOP RESOURCE PROCESSES</div>
+              <div class="top-procs-grid">
+                <div>
+                  <div class="sub-cap cyan-txt">Top CPU Consumers</div>
+                  <div id="top-cpu-procs" class="proc-list"></div>
+                </div>
+                <div>
+                  <div class="sub-cap" style="color:var(--violet)">Top RAM Consumers</div>
+                  <div id="top-ram-procs" class="proc-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-box">
+              <div class="box-head" style="margin-bottom:8px;">
+                <span class="box-title" style="margin-bottom:0">STORAGE VOLUMES &amp; DISK I/O</span>
+                <span class="mono muted-text" id="disk-io-rate">R: 0.0 MB/s // W: 0.0 MB/s</span>
+              </div>
+              <div id="v-disks-list" class="disks-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: AUTO PROFILES -->
+        <section class="tab-view" id="tab-profiles">
+          <div class="panel-box">
+            <div class="box-head">
+              <div>
+                <div class="box-title">FOREGROUND APPLICATION &amp; WINDOW TITLE AUTO-SWITCH</div>
+                <p class="muted-text">Automatically flip your CYD page by matching foreground executable name and/or window title substring.</p>
+              </div>
+              <div class="rule-toggles">
+                <label class="toggle-check">
+                  <input type="checkbox" id="f-auto-switch" />
+                  <span>Enable Auto-Switch</span>
+                </label>
+                <label class="toggle-check">
+                  <input type="checkbox" id="f-auto-home" />
+                  <span>Return to Page 1 when idle</span>
+                </label>
+              </div>
+            </div>
+            <div class="active-app-banner">
+              <div class="minw0" style="flex:1;">
+                <span class="muted-text">Active Window: </span>
+                <strong class="mono cyan-txt" id="active-exe-now">-</strong>
+                <span class="muted-text mono truncate-inline" id="active-title-now"></span>
+              </div>
+              <button class="btn btn-accent btn-sm" id="btn-bind-active">+ Bind Active Window to Current Page</button>
+            </div>
+            <div id="rules-list" class="rules-list"></div>
+          </div>
+        </section>
+
+        <!-- TAB 4: DEVICE & FLASH -->
+        <section class="tab-view" id="tab-device">
+          <div class="device-grid">
+            <div class="panel-box">
+              <div class="box-title">2.8" CYD HARDWARE SETTINGS (E32R28T)</div>
+              <div class="form-stack">
+                <label class="field">
+                  <span>Backlight Brightness (<span id="cfg-bl-val">90%</span>)</span>
+                  <input type="range" id="cfg-bl" min="25" max="255" value="230" class="slider" />
+                </label>
+                <div class="form-grid-2">
+                  <label class="field">
+                    <span>Orientation</span>
+                    <select id="cfg-rot">
+                      <option value="1">Landscape (USB Right)</option>
+                      <option value="3">Landscape Flip (USB Left)</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Rear RGB LED Mode</span>
+                    <select id="cfg-led">
+                      <option value="0">Vitals Thermal Pulse</option>
+                      <option value="1">Spectrum RGB Cycle</option>
+                      <option value="2">Hydro Cyan Glow</option>
+                      <option value="3">LED Off</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-grid-2">
+                  <label class="field">
+                    <span>Auto-Sleep Timeout</span>
+                    <select id="cfg-slp">
+                      <option value="60">1 Minute</option>
+                      <option value="300">5 Minutes</option>
+                      <option value="900">15 Minutes</option>
+                      <option value="0">Never Sleep</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Virtual CYD Panel Driver</span>
+                    <select id="cfg-vpanel">
+                      <option value="ili9341">ILI9341 (BGR Standard)</option>
+                      <option value="st7789">ST7789 (RGB Variant)</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="field">
+                  <span>Tactile Speaker &amp; Display Panel Fixes</span>
+                  <div class="inline-checks">
+                    <label class="toggle-check"><input type="checkbox" id="cfg-sfx" checked /> <span>DAC Click SFX</span></label>
+                    <label class="toggle-check"><input type="checkbox" id="cfg-inv" /> <span>Invert Colors</span></label>
+                    <label class="toggle-check"><input type="checkbox" id="cfg-bgr" /> <span>Swap R/B (BGR)</span></label>
+                  </div>
+                </div>
+                <div class="btn-row">
+                  <button class="btn btn-primary" id="btn-save-cfg">Apply &amp; Sync to Device</button>
+                  <button class="btn btn-danger" id="btn-reset-cfg">Reset Factory Defaults</button>
+                  <span class="cfg-sync-pill" id="cfg-dirty">Config Synced</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-box">
+              <div class="box-title">COM PORT &amp; FIRMWARE BRIDGE DIAGNOSTICS</div>
+              <div class="port-action-row">
+                <label class="field minw0" style="flex:1;">
+                  <span>Serial Port</span>
+                  <select id="cfg-port"></select>
+                </label>
+                <button class="btn btn-accent btn-sm" id="btn-connect-port">Reconnect</button>
+                <button class="btn btn-danger btn-sm" id="btn-disconnect-port" title="Release COM port for esptool flashing">Release COM</button>
+              </div>
+              <div class="diag-box mono" id="serial-diag-box">Checking COM11 status...</div>
+
+              <div class="divider"></div>
+              <div class="box-title">COMPILED FIRMWARE &amp; SD / USB EXPORT</div>
+              <p class="muted-text">Unplug any back P2 UART module (GPIO3/RXD0 shared with CH340) before USB flashing, or download binaries for microSD / ESPTool.</p>
+              <div class="fw-bins mono" id="fw-bins">Checking compiled binaries...</div>
+              <div class="btn-row" style="flex-wrap:wrap;gap:6px;">
+                <button class="btn btn-ghost btn-sm" id="btn-export-sd">Export SD Card Package</button>
+                <a class="btn btn-accent btn-sm link-btn" href="/api/firmware/download/HYDRO-DECK_E32R28T_ILI9341_firmware.bin">Download ILI9341 .bin</a>
+                <a class="btn btn-ghost btn-sm link-btn" href="/api/firmware/download/HYDRO-DECK_E32R28T_ST7789_firmware.bin">Download ST7789 .bin</a>
+              </div>
+
+              <div class="divider"></div>
+              <div class="box-title">SERIAL STREAM MONITOR</div>
+              <pre class="serial-log" id="serial-log"></pre>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Right Hardware Twin Preview (Live C++ Virtual CYD Framebuffer) -->
+      <aside class="twin-dock">
+        <div class="twin-head">
+          <div class="box-head-inline">
+            <span class="box-title" style="margin-bottom:0">LIVE VIRTUAL CYD</span>
+            <span class="mono muted-text" id="twin-fps-lbl">C++ EMU</span>
+          </div>
+          <div class="twin-head-tools">
+            <button class="btn-xs" id="btn-twin-zoom" title="Toggle zoom">1x</button>
+            <button class="btn-xs active" id="btn-popout-vcyd" title="Open full standalone Virtual CYD PCB window">Pop Out ↗</button>
+          </div>
+        </div>
+
+        <div class="cyd-bezel">
+          <div class="cyd-led" id="twin-led" title="Live Firmware RGB LED"></div>
+          <div class="cyd-screen-wrap" id="twin-screen-wrap">
+            <canvas id="twin-canvas" width="320" height="240" title="Click or drag directly on touchscreen!"></canvas>
+            <img id="cyd-screen-img" src="/api/virtual/frame.png" alt="Virtual CYD Fallback" style="display:none;" />
+          </div>
+          <div class="cyd-label-plate">E32R28T // REAL C++ FIRMWARE MIRROR</div>
+        </div>
+
+        <div class="twin-hw-bar">
+          <button class="btn-xs" id="btn-cyd-boot" title="Simulate GPIO0 BOOT button short/long press">BOOT BTN</button>
+          <button class="btn-xs" id="btn-cyd-cal" title="Run interactive 4-corner resistive calibration">CALIBRATE</button>
+          <button class="btn-xs" id="btn-cyd-sleep" title="Put CYD backlight &amp; display to sleep">SLEEP</button>
+          <button class="btn-xs" id="btn-cyd-reset" title="Reboot Virtual CYD MCU">REBOOT</button>
+        </div>
+
+        <div class="twin-controls">
+          <div class="twin-sub-label">Jump Device Screen</div>
+          <div class="twin-screen-pills">
+            <button class="btn-xs active" data-cyd-scr="deck">DECK</button>
+            <button class="btn-xs" data-cyd-scr="vitals">VITALS</button>
+            <button class="btn-xs" data-cyd-scr="media">MEDIA</button>
+            <button class="btn-xs" data-cyd-scr="timer">TIMER</button>
+            <button class="btn-xs" data-cyd-scr="sys">SYS</button>
+          </div>
+
+          <div class="twin-sub-label" id="vitals-sub-row" style="display:none;">
+            <span>Vitals Sub-View</span>
+            <div class="twin-screen-pills">
+              <button class="btn-xs" data-vsub="overview">ALL</button>
+              <button class="btn-xs" data-vsub="cpu">CPU</button>
+              <button class="btn-xs" data-vsub="gpu">GPU</button>
+              <button class="btn-xs" data-vsub="ram">RAM</button>
+            </div>
+          </div>
+
+          <div class="panel-box quick-specs">
+            <div class="qs-row"><span>ACTIVE PAGE</span><strong class="mono cyan-txt" id="twin-page-name">MAIN</strong></div>
+            <div class="qs-row"><span>NOW PLAYING</span><strong class="mono truncate" id="twin-song">-</strong></div>
+            <div class="qs-row"><span>DISK FREE</span><strong class="mono" id="twin-disk">-- GB</strong></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Inline Rename / Add Page Modal -->
+  <div class="modal-backdrop" id="studio-modal" style="display:none;">
+    <div class="modal-card panel-box">
+      <div class="box-title" id="modal-title">PAGE ACTION</div>
+      <label class="field">
+        <span id="modal-label">Page Name</span>
+        <input type="text" id="modal-input" maxlength="12" placeholder="e.g. STREAMING" />
+      </label>
+      <div class="btn-row" style="justify-content:flex-end;margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Starter Templates Gallery Modal -->
+  <div class="modal-backdrop" id="templates-modal" style="display:none;">
+    <div class="modal-card modal-wide panel-box">
+      <div class="box-head">
+        <div class="box-title" style="margin-bottom:0">STARTER PROFILE PACKS</div>
+        <button class="btn-xs" id="tpl-close">✕ Close</button>
+      </div>
+      <p class="muted-text" style="margin-bottom:10px;">Import a curated 6-key macro deck tailored to your workflow.</p>
+      <div id="tpl-list" class="tpl-grid"></div>
+    </div>
+  </div>
+
+  <div class="toast-banner" id="studio-toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

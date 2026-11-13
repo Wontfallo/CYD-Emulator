@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Virtual CYD</title>
+<style>
+  :root { color-scheme: dark; --bg:#14161a; --panel:#1d2026; --line:#2c313a; --text:#d7dce4; --dim:#8791a1; --accent:#f2c230; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:13px/1.45 ui-monospace,Consolas,monospace; }
+  main { display:grid; grid-template-columns:auto minmax(320px,1fr); gap:20px; padding:20px; align-items:start; }
+  .board { background:#d9b52b; padding:14px 14px 14px 30px; border-radius:6px; position:relative; box-shadow:0 6px 24px #0008; }
+  .board::before { content:"USB"; position:absolute; left:4px; top:50%; transform:translateY(-50%) rotate(-90deg); font-size:9px; color:#6b5a12; letter-spacing:2px; }
+  #screen { display:block; image-rendering:pixelated; background:#000; cursor:crosshair; border:3px solid #111; touch-action:none; }
+  .led { position:absolute; left:9px; top:14px; width:10px; height:10px; border-radius:50%; background:#222; border:1px solid #0006; }
+  .row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  button { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:4px; padding:5px 12px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  .side { display:grid; gap:14px; min-width:0; }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 14px; min-width:0; }
+  h2 { margin:0 0 8px; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--dim); font-weight:600; }
+  dl { display:grid; grid-template-columns:90px 1fr; gap:3px 10px; margin:0; }
+  dt { color:var(--dim); } dd { margin:0; overflow-wrap:anywhere; }
+  #serial { height:300px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; margin:0; color:#b9e2b0; }
+  form { display:flex; gap:8px; margin-top:8px; }
+  input { flex:1; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:4px; padding:5px 8px; font:inherit; min-width:0; }
+  #pos { color:var(--dim); margin-left:auto; align-self:center; }
+  @media (max-width: 900px) { main { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <div class="board">
+      <div class="led" id="led" title="RGB LED"></div>
+      <img id="screen" width="640" height="480" alt="CYD screen" draggable="false">
+    </div>
+    <div class="row">
+      <button id="reset">EN (reset)</button>
+      <button id="boot">BOOT</button>
+      <button id="cycle">Power cycle</button>
+      <span id="pos"></span>
+    </div>
+  </div>
+  <div class="side">
+    <section><h2>Board</h2><dl id="info"></dl></section>
+    <section>
+      <h2>Serial</h2>
+      <pre id="serial"></pre>
+      <form id="send"><input id="line" placeholder="send a line to the firmware" autocomplete="off"><button>Send</button></form>
+    </section>
+  </div>
+</main>
+<script>
+const img = document.getElementById('screen'), pos = document.getElementById('pos');
+const serial = document.getElementById('serial'), info = document.getElementById('info');
+let sw = 320, sh = 240, next = null, busy = false;
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+  return r.json();
+}
+function refresh() {
+  if (busy) return;
+  busy = true;
+  const next_img = new Image();
+  next_img.onload = () => { img.src = next_img.src; busy = false; };
+  next_img.onerror = () => { busy = false; };
+  next_img.src = '/screenshot.png?scale=2&t=' + Date.now();
+}
+function pt(ev) {
+  const r = img.getBoundingClientRect();
+  return { x: Math.max(0, Math.min(sw - 1, Math.floor((ev.clientX - r.left) / r.width * sw))),
+           y: Math.max(0, Math.min(sh - 1, Math.floor((ev.clientY - r.top) / r.height * sh))) };
+}
+let down = false, downAt = 0;
+const MIN_PRESS_MS = 90;   // a finger never touches for 0 ms; a mouse click can
+img.addEventListener('pointerdown', ev => { down = true; downAt = performance.now(); img.setPointerCapture(ev.pointerId); api('/touch', { action: 'down', ...pt(ev), wait: false }); });
+img.addEventListener('pointermove', ev => { const p = pt(ev); pos.textContent = `x ${p.x}  y ${p.y}`; if (down) api('/touch', { action: 'move', ...p, wait: false }); });
+img.addEventListener('pointerup', () => {
+  if (!down) return;
+  down = false;
+  const held = performance.now() - downAt;
+  api('/touch', { action: 'up', delay_ms: Math.max(0, Math.round(MIN_PRESS_MS - held)), wait: false });
+});
+document.getElementById('reset').onclick = () => api('/reset', {});
+document.getElementById('cycle').onclick = () => api('/power', { cycle: true });
+const boot = document.getElementById('boot');
+boot.onpointerdown = () => api('/button', { name: 'boot', action: 'press' });
+boot.onpointerup = () => api('/button', { name: 'boot', action: 'release' });
+document.getElementById('send').onsubmit = ev => {
+  ev.preventDefault();
+  const el = document.getElementById('line');
+  api('/serial', { text: el.value });
+  el.value = '';
+};
+async function poll() {
+  try {
+    const s = await api('/status');
+    const rows = [['board', s.board]];
+    const app = s.flash.apps[0];
+    rows.push(['firmware', app ? `${app.project} ${app.version}` : 'none']);
+    if (s.powered) {
+      sw = s.display.width; sh = s.display.height;
+      img.width = sw * 2; img.height = sh * 2;
+      rows.push(['power', `on, ${(s.virtual_ms / 1000).toFixed(1)} s device time`]);
+      rows.push(['display', `${sw}x${sh} ${s.display.sleeping ? 'sleeping' : s.display.on ? 'on' : 'off'}`]);
+      rows.push(['backlight', `${Math.round(s.backlight.brightness * 100)}% (${s.backlight.mode})`]);
+      if (s.led) { rows.push(['rgb led', s.led.hex]); document.getElementById('led').style.background = s.led.hex; }
+      if (s.audio) rows.push(['audio', s.audio.tone_hz ? `${s.audio.tone_hz} Hz` : 'silent']);
+      rows.push(['touch', `${s.touch.down ? 'down' : 'up'} (${s.touch.transport})`]);
+    } else rows.push(['power', 'off' + (s.last_exit ? ` (${s.last_exit})` : '')]);
+    info.replaceChildren(...rows.flatMap(([k, v]) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; return [dt, dd]; }));
+    const q = next === null ? '?tail=6000' : `?since=${next}`;
+    const r = await api('/serial' + q);
+    if (r.data) {
+      const stick = serial.scrollTop + serial.clientHeight >= serial.scrollHeight - 8;
+      serial.textContent = (serial.textContent + r.data.replace(/\r/g, '')).slice(-60000);
+      if (stick) serial.scrollTop = serial.scrollHeight;
+    }
+    next = r.next;
+  } catch (e) { /* daemon restarting */ }
+}
+setInterval(refresh, 150);
+setInterval(poll, 500);
+refresh(); poll();
+</script>
+</body>
+</html>

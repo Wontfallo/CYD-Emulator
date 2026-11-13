@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# build output
+firmware/.pio/
+companion/virtual_cyd/obj/
+companion/virtual_cyd/*.exp
+companion/virtual_cyd/*.lib
+cyd-emu/core/obj/
+cyd-emu/dist/
+
+# runtime state
+cyd-emu/state/
+companion/data/virtual_cyd/
+companion/data/screenshots/
+companion/tests/rendered_screens/
+
+# local reference material, not part of this project
+Freenove_ESP32_Display-main/
+stepgate-extension/
+/*.png

@@ -1,0 +1,389 @@
+{
+  "serial_port": "COM11",
+  "baud_rate": 115200,
+  "auto_connect": true,
+  "wifi_host": "",
+  "auto_profile_switch": false,
+  "device_settings": {
+    "bl": 230,
+    "rot": 1,
+    "inv": false,
+    "bgr": false,
+    "led": 0,
+    "sfx": true,
+    "slp": 300
+  },
+  "app_rules": [
+    {
+      "process": "Code.exe",
+      "page_index": 1,
+      "enabled": true
+    },
+    {
+      "process": "WindowsTerminal.exe",
+      "page_index": 1,
+      "enabled": true
+    },
+    {
+      "process": "obs64.exe",
+      "page_index": 2,
+      "enabled": true
+    }
+  ],
+  "pages": [
+    {
+      "name": "MAIN",
+      "tiles": [
+        {
+          "label": "MIC MUTE",
+          "sub": "AUDIO",
+          "icon": "mic",
+          "col": "#FF3A62",
+          "tog": true,
+          "on": false,
+          "jmp": -1,
+          "action_type": "media",
+          "action_payload": "mute_mic",
+          "hold_action_type": "app",
+          "hold_action_payload": "ms-settings:sound"
+        },
+        {
+          "label": "SCREENSHOT",
+          "sub": "PNG SAVE",
+          "icon": "shot",
+          "col": "#00F0DA",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "screenshot",
+          "action_payload": "",
+          "hold_action_type": "hotkey",
+          "hold_action_payload": "WIN+SHIFT+S"
+        },
+        {
+          "label": "PLAY/PAUSE",
+          "sub": "MEDIA",
+          "icon": "play",
+          "col": "#22E88A",
+          "tog": true,
+          "on": false,
+          "jmp": -1,
+          "action_type": "media",
+          "action_payload": "play_pause",
+          "hold_action_type": "media",
+          "hold_action_payload": "next"
+        },
+        {
+          "label": "VOL DOWN",
+          "sub": "-6%",
+          "icon": "vol_dn",
+          "col": "#3898FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "media",
+          "action_payload": "vol_down",
+          "hold_action_type": "media",
+          "hold_action_payload": "mute_vol"
+        },
+        {
+          "label": "VOL UP",
+          "sub": "+6%",
+          "icon": "vol_up",
+          "col": "#3898FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "media",
+          "action_payload": "vol_up",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "DEV LAB",
+          "sub": "FOLDER",
+          "icon": "folder",
+          "col": "#A866FF",
+          "tog": false,
+          "on": false,
+          "jmp": 1,
+          "action_type": "folder",
+          "action_payload": "1",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        }
+      ]
+    },
+    {
+      "name": "DEV LAB",
+      "tiles": [
+        {
+          "label": "TERMINAL",
+          "sub": "WT / PS",
+          "icon": "terminal",
+          "col": "#00F0DA",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "app",
+          "action_payload": "wt.exe",
+          "hold_action_type": "app",
+          "hold_action_payload": "powershell.exe"
+        },
+        {
+          "label": "VS CODE",
+          "sub": "IDE",
+          "icon": "code",
+          "col": "#3898FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "app",
+          "action_payload": "code",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "GIT STATUS",
+          "sub": "MACRO",
+          "icon": "git",
+          "col": "#FFB62E",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "sequence",
+          "action_payload": [
+            {
+              "kind": "text",
+              "value": "git status -sb"
+            },
+            {
+              "kind": "hotkey",
+              "value": "ENTER"
+            }
+          ],
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "CLIPBOARD",
+          "sub": "WIN+V",
+          "icon": "clipboard",
+          "col": "#A866FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "hotkey",
+          "action_payload": "WIN+V",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "COPY/RUN",
+          "sub": "CTRL+S",
+          "icon": "rocket",
+          "col": "#22E88A",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "sequence",
+          "action_payload": [
+            {
+              "kind": "hotkey",
+              "value": "CTRL+S"
+            },
+            {
+              "kind": "delay",
+              "value": 80
+            },
+            {
+              "kind": "hotkey",
+              "value": "F5"
+            }
+          ],
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "BACK MAIN",
+          "sub": "RETURN",
+          "icon": "back",
+          "col": "#8A9AB8",
+          "tog": false,
+          "on": false,
+          "jmp": 0,
+          "action_type": "folder",
+          "action_payload": "0",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        }
+      ]
+    },
+    {
+      "name": "STREAM",
+      "tiles": [
+        {
+          "label": "REC TOGGLE",
+          "sub": "WIN+ALT+R",
+          "icon": "rec",
+          "col": "#FF3A62",
+          "tog": true,
+          "on": false,
+          "jmp": -1,
+          "action_type": "hotkey",
+          "action_payload": "WIN+ALT+R",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "GAME BAR",
+          "sub": "WIN+G",
+          "icon": "cam",
+          "col": "#A866FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "hotkey",
+          "action_payload": "WIN+G",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "DISCORD",
+          "sub": "MUTE KEY",
+          "icon": "discord",
+          "col": "#3898FF",
+          "tog": true,
+          "on": false,
+          "jmp": -1,
+          "action_type": "hotkey",
+          "action_payload": "CTRL+SHIFT+M",
+          "hold_action_type": "hotkey",
+          "hold_action_payload": "CTRL+SHIFT+D"
+        },
+        {
+          "label": "CLIP 30s",
+          "sub": "WIN+ALT+G",
+          "icon": "flame",
+          "col": "#FFB62E",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "hotkey",
+          "action_payload": "WIN+ALT+G",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "SPOTIFY",
+          "sub": "LAUNCH",
+          "icon": "music",
+          "col": "#22E88A",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "url",
+          "action_payload": "https://open.spotify.com",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "BACK MAIN",
+          "sub": "RETURN",
+          "icon": "back",
+          "col": "#8A9AB8",
+          "tog": false,
+          "on": false,
+          "jmp": 0,
+          "action_type": "folder",
+          "action_payload": "0",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        }
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "tiles": [
+        {
+          "label": "BROWSER",
+          "sub": "NEW TAB",
+          "icon": "browser",
+          "col": "#00F0DA",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "url",
+          "action_payload": "https://www.google.com",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "SNAP LEFT",
+          "sub": "WIN+LEFT",
+          "icon": "window",
+          "col": "#3898FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "window",
+          "action_payload": "snap_left",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "SNAP RGHT",
+          "sub": "WIN+RGHT",
+          "icon": "window",
+          "col": "#3898FF",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "window",
+          "action_payload": "snap_right",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "TASK MGR",
+          "sub": "SYS MON",
+          "icon": "cpu",
+          "col": "#FFB62E",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "app",
+          "action_payload": "taskmgr.exe",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "EXPLORER",
+          "sub": "FILES",
+          "icon": "folder",
+          "col": "#22E88A",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "hotkey",
+          "action_payload": "WIN+E",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        },
+        {
+          "label": "LOCK PC",
+          "sub": "WIN+L",
+          "icon": "lock",
+          "col": "#FF3A62",
+          "tog": false,
+          "on": false,
+          "jmp": -1,
+          "action_type": "window",
+          "action_payload": "lock_pc",
+          "hold_action_type": "",
+          "hold_action_payload": ""
+        }
+      ]
+    }
+  ]
+}

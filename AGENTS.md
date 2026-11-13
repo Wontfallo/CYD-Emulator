@@ -28,6 +28,14 @@ NVS/filesystem (add `--erase` for a clean chip). Board profile defaults to `e32r
 
 ## Real hardware
 
-A physical CYD is on COM11. As of 2026-11-12 its PC→board serial line does not work
-(esptool: "serial TX path seems to be down"), so it cannot be flashed over USB, and it is
-running HaleHound-CYD v3.9.3, not HYDRO-DECK.
+Two physical boards have been used with this project (both show up as CH340 on COM11 when
+plugged into the same USB port):
+
+- **Original CYD (ESP32-2432S028R):** flashes normally with esptool's automatic reset. It runs
+  HYDRO-DECK as of 2026-11-12.
+- **"3E" (Freenove ESP32-32E / E32R28T with NRF24 + GPS wired on):** needs manual download
+  mode - hold BOOT while plugging USB in, then run the flash command as the first thing that
+  touches the port. Do not reset it or open the port beforehand. Its notes are in the owner's
+  WontHound-CYD tree (`_boards_separated/CYD-ESP32-3E/README.md`). Command-line flashing of
+  HYDRO-DECK to it has not succeeded yet; `firmware_dist/*_MERGED.bin` (flash at 0x0) exist
+  for use with a web flasher.

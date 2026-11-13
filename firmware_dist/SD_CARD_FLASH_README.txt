@@ -18,3 +18,6 @@ Panel Variants Included:
    0x8000  <variant>_partitions.bin
    0xe000  boot_app0.bin
    0x10000 <variant>_firmware.bin
+
+4. Single-file images for web flashers (esp.huhn.me and similar), flash at address 0x0:
+   HYDRO-DECK_E32R28T_ILI9341_MERGED.bin  /  HYDRO-DECK_E32R28T_ST7789_MERGED.bin

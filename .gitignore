@@ -20,3 +20,6 @@ companion/tests/rendered_screens/
 Freenove_ESP32_Display-main/
 stepgate-extension/
 /*.png
+
+# flash backups of real hardware
+backups/
